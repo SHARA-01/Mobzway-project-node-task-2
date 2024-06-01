@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> <%= title %> </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+</head>
+
+<body>
+    <style>
+        .input-box {
+            outline: none;
+            padding-left: 20px;
+            width: 80%;
+            padding: 10px;
+            border-radius: 10px;
+            margin: auto;
+            box-shadow: 3px 3px 1px gray;
+        }
+        .input-box:focus {
+            box-shadow: 5px 5px 1px gainsboro;
+        }
+        .error {
+            width: 80%;
+            padding-left: 10%;
+            color: red;
+            font-size: 1em;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+        .btn{
+           transition: transform 5000;
+        }
+        .btn:hover {
+         transform: translateY(-5px);
+            box-shadow: 5px 5px 1px gray;
+        }
+    </style>
+    <h1 style="text-align: center;">
+        <%= title %>
+    </h1>
+    <form id="registrationForm" style="display: grid; width:50%; margin: auto;">
+        <input class="input-box" type="text" id="firstName" name="firstName" placeholder="First Name" required><br>
+        <div class="error" id="error-first_name"></div>
+
+        <input class="input-box" type="text" id="lastName" name="lastName" placeholder="Last Name" required><br>
+        <div class="error" id="error-last_name"></div>
+
+        <input class="input-box" type="email" id="email" name="email" placeholder="Email" required><br>
+        <div class="error" id="error-email"></div>
+
+        <input class="input-box" type="text" id="login_ID" name="login_ID" placeholder="Login ID" required><br>
+        <div class="error" id="error-login_id"></div>
+
+        <input class="input-box" type="number" id="mobile" name="mobile" placeholder="Mobile No." required><br>
+        <div class="error" id="error-mobile_number"></div>
+
+        <label for="street"><span style="padding-left: 10%; margin:10px 1px; font-weight: 700; font-size: 1.2rem;">Address</span></label><br>
+        <input class="input-box" type="text" id="street" name="street" placeholder="Street" required><br>
+
+        <input class="input-box" type="text" id="city" name="city" placeholder="City" required><br>
+        <div class="error" id="error-city"></div>
+
+        <input class="input-box" type="text" id="state" name="state" placeholder="State" required><br>
+        <div class="error" id="error-state"></div>
+
+        <input class="input-box" type="text" id="country" name="country" placeholder="Country" required><br>
+        <div class="error" id="error-country"></div>
+
+        <input class="input-box" type="password" id="password" name="password" placeholder="Password" required><br>
+        <div class="error" id="error-password"></div>
+
+        <div style="display: flex; justify-content: space-between; width: 80%; margin: auto;">
+            <a href="/data"><button class="btn" style="border-radius: 15px; padding: 5% 10px; " type="button">View Data</button></a>
+            <a href="/room"><button class="btn"  style="border-radius: 15px; padding: 5px;" type="button">Join Room</button></a>
+            <button class="btn" style="border-radius: 15px; padding: 5px;width:20%;" type="submit">Register</button>
+        </div>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#registrationForm').on('submit', function (event) {
+                event.preventDefault();
+                $('.error').text('');
+
+                const userData = {firstName: $('#firstName').val(), lastName: $('#lastName').val(), login_ID: $('#login_ID').val(), mobile: $('#mobile').val(), street: $('#street').val(),
+                 city: $('#city').val(), state: $('#state').val(),  country: $('#country').val(),  email: $('#email').val(), password: $('#password').val() };
+
+                $.ajax({
+                    url: '/user',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(userData),
+                    success: function (response) {
+                        toastr.success(response);
+                        window.location.href = `/room/user/${encodeURIComponent($('#email').val())}`
+                    },
+                    error: function (xhr, status, error) {
+                        const errors = xhr.responseJSON.errors;
+                        $.each(errors, function (key, value) {
+                           if(key === "address.city"){
+                            $('#error-city').text(value);
+                           }
+                           else if( key === "address.state"){
+                            $('#error-state').text(value);
+                           }
+                           else if(key === "address.country"){
+                            $('#error-country').text(value);
+                           }
+                           $('#error-' + key).text(value);
+                           
+                        });
+                        console.log(xhr, status, error)
+                        toastr.error(error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

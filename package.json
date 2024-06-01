@@ -1,0 +1,23 @@
+{
+  "name": "assigment-no.-1-(-node)",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": " src/index.js"
+  },
+  "keywords": [],
+  "author": "gs",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "mongoose": "^8.4.0",
+    "socket.io": "^4.7.5"
+  }
+}

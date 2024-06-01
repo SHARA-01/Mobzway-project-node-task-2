@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %>
+    </title>
+</head>
+
+<body>
+    <style>
+        td{
+            display: flex;
+            justify-content: center;
+            justify-items: stretch ;
+            padding: 0.5rem 5px;  text-align: center; min-width: 10rem; 
+            max-width: 10rem; 
+            margin: 0px 2rem;
+
+        }
+        th{display: flex;
+            justify-content: center;
+            justify-items: stretch ;
+            padding: 0.5rem 5px;  text-align: center; min-width: 10rem; 
+            max-width: 10rem; 
+            margin: 0px 2rem; 
+        }
+
+    .btn {
+        border-radius: 15px; padding: 10px 10px; border: none; box-shadow: 0px 0px 2px black; 
+    }
+    .btn:active{
+        background-color: gray;
+        color: white;
+
+    }
+    </style>
+    <a href="/"><button class="btn" type="button">Back</button></a>
+    <h1 style="text-align: center;">
+        <%= title %>
+    </h1>
+    <div id="response">
+        <table style="display: flex; flex-flow: column; width: 95%; margin: auto;">
+            <tr style="display: flex; gap:5px; padding: 2px 5px;margin: 3px; border-bottom: 1px solid gray;">
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Mobile</th>
+                <th>login Id</th>
+                <th>Address (City)</th>
+                <th>Created At</th>
+            </tr>
+            <% data?.map(function(item, index){ %>
+                <tr key="index" style="display: flex; gap:5px; padding: 2px 5px;margin: 3px; border-bottom: 1px solid gray;">
+                    <td><%= item?.first_name %> <%= item?.last_name %></td>
+                    <td><%= item?.email %></td>
+                    <td><%= item?.mobile_number %></td>
+                    <td><%= item?.login_id %></td>
+                    <td><%= item?.address?.city %></td> 
+                    <td><%= formatDate(item?.createdAt, "dd-LLL-yyyy") %></td> 
+                </tr>
+                <% }) %>
+        </table>
+    </div>
+</body>
+
+</html>
