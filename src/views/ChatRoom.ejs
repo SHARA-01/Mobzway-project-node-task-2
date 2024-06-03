@@ -24,12 +24,13 @@
         }
 
         .container {
-            display: flex;
+            /* display: flex; */
             width: 100%;
+            position: absolute;
         }
 
         .container div {
-            width: 50%;
+            /* width: 50%; */
             padding: 20px;
         }
 
@@ -48,7 +49,48 @@
         .bbtn:active {
             background-color: gray;
             color: white;
+        }
 
+        #modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #popup-container {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 8px;
+            border: 1px solid #888;
+        }
+        .close-modal {
+            text-align: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.1);
+            max-height: 40px;
+            min-width: 40px;
+            border: 1px solid gray;
+            border-radius: 100%;
+            cursor: pointer;
+            transition: border 0.3s ease;
+        }
+        .close-modal:hover {
+            border: 1px solid red;
+            transition: 0.3s ease-in;
+            transform: rotate(90deg);
         }
     </style>
     <a href="/room"><button class="bbtn" type="button">Back</button></a>
@@ -57,53 +99,85 @@
             <h1> Live user</h1>
             <ul class="user-list"></ul>
         </div>
-        <div id="user-details" class="details"></div>
-    </div>
+        <!-- modal -->
+        <div id="modal">
+            <div id="popup-container">
+                <div id="user-details" class="details"></div>
+                <button onclick="modalHandler()" class="close-modal">❌</button>
+            </div>
+        </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <script>
-        function showUser(userId) {
-            $.ajax({
-                url: `/user/${userId}`,
-                type: 'GET',
-                success: function (response) {
-
-                    console.log(response[0])
-                    document.querySelector('#user-details').innerHTML =
-                        `User ID: ${response[0]._id} <br/>
-                        Full Name: ${response[0]?.first_name} ${response[0]?.last_name} <br/>
-                        User Mobile no. : ${response[0]?.mobile_number}  <br/>
-                        User Login ID: ${response[0]?.login_id}  <br/>
-                        User SocketID: ${response[0]?.socketId}  <br/>
-                        User Created At: ${response[0]?.createdAt}  <br/>
-                        User Last UpdateID: ${response[0]?.updatedAt}  <br/>
-                       `
-                },
-            });
-        }
-    </script>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        socket.on('connect', () => {
-            let email = '<%= email %>'
-            if (email) {
-                socket.emit('join', email);
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+        <script>
+            function modalHandler() {
+                const modal = document.querySelector('#modal');
+                modal.style.display = (modal.style.display === 'block') ? 'none' : 'block';
             }
-        });
 
-        socket.on('user joined', (data) => {
-            toastr.success(`Joined ${data?.joinedUser?.first_name} ${data?.joinedUser?.last_name}`);
-            let newdata = data?.user?.filter(item => item?.socketId);
-            const exitsUser = document.querySelector('.user-list');
-            if (exitsUser) {
-                newdata.forEach(user => {
-                    const newdata = document.querySelector(`li[data-email="${user?.email}"]`)
-                    if (newdata) {
-                        newdata.innerHTML = `Email: ${user?.email} | Socket ID: ${user?.socketId}`;
-                    } else {
+            function showUser(userId) {
+                const modal = document.querySelector('#modal');
+                modal.style.display = 'block';
+
+                $.ajax({
+                    url: `/user/${userId}`,
+                    type: 'GET',
+                    success: function (response) {
+                        const user = response[0];
+                        const userDetails = `
+                        User ID: ${user._id} <br/>
+                        Full Name: ${user.first_name} ${user.last_name} <br/>
+                        User Mobile no.: ${user.mobile_number} <br/>
+                        User Login ID: ${user.login_id} <br/>
+                        User SocketID: ${user.socketId} <br/>
+                        User Created At: ${new Date(user.createdAt).toLocaleString()} <br/>
+                        User Last UpdateID: ${new Date(user.updatedAt).toLocaleString()} <br/>
+                        `;
+                        document.querySelector('#user-details').innerHTML = userDetails;
+                    },
+                    error: function (error) {
+                        console.error('Error fetching user data:', error);
+                        document.querySelector('#user-details').innerHTML = 'Error loading user details.';
+                    }
+                });
+            }
+          
+        </script>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            const socket = io();
+            socket.on('connect', () => {
+                let email = '<%= email %>'
+                if (email) {
+                    socket.emit('join', email);
+                }
+            });
+
+            socket.on('user joined', (data) => {
+                toastr.success(`Joined ${data?.joinedUser?.first_name} ${data?.joinedUser?.last_name}`);
+                let newdata = data?.user?.filter(item => item?.socketId);
+                const exitsUser = document.querySelector('.user-list');
+                if (exitsUser) {
+                    newdata.forEach(user => {
+                        const newdata = document.querySelector(`li[data-email="${user?.email}"]`)
+                        if (newdata) {
+                            newdata.innerHTML = `Email: ${user?.email} | Socket ID: ${user?.socketId}`;
+                        } else {
+                            const liveUser = document.querySelector(`.user-list`);
+                            const li = document.createElement('li');
+                            li.innerHTML = `Email: ${user?.email} | Socket ID: ${user?.socketId}`;
+                            li.setAttribute('data-email', user?.email);
+                            li.setAttribute('onclick', `showUser('${user?.email}')`);
+                            li.addEventListener('click', function () {
+                                showUser(user?.email);
+                            });
+                            liveUser.appendChild(li);
+                        }
+                    })
+                } else {
+                    newdata?.forEach(user => {
+                        console.log(user._id)
                         const liveUser = document.querySelector(`.user-list`);
                         const li = document.createElement('li');
                         li.innerHTML = `Email: ${user?.email} | Socket ID: ${user?.socketId}`;
@@ -113,37 +187,23 @@
                             showUser(user?.email);
                         });
                         liveUser.appendChild(li);
-                    }
-                })
-            } else {
-                newdata?.forEach(user => {
-                    console.log(user._id)
-                    const liveUser = document.querySelector(`.user-list`);
-                    const li = document.createElement('li');
-                    li.innerHTML = `Email: ${user?.email} | Socket ID: ${user?.socketId}`;
-                    li.setAttribute('data-email', user?.email);
-                    li.setAttribute('onclick', `showUser('${user?.email}')`);
-                    li.addEventListener('click', function () {
-                        showUser(user?.email);
-                    });
-                    liveUser.appendChild(li);
-                })
-            }
-        });
-
-        // when user live the room clear it data from the live user list..
-        socket.on('user left', (data) => {
-            console.log("this is des: ", data)
-            toastr.error(`User Left : ${data.full_name}`);
-            const items = document.querySelectorAll('.user-list li');
-            items.forEach(item => {
-                console.log(data.socketId, socket.id)
-                if (item.textContent.includes(data?.socketId)) {
-                    item.remove();
+                    })
                 }
             });
-        });
-    </script>
+
+            // delete user form live user's ..
+            socket.on('user left', (data) => {
+                console.log("this is des: ", data)
+                toastr.error(`User Left : ${data.full_name}`);
+                const items = document.querySelectorAll('.user-list li');
+                items.forEach(item => {
+                    console.log(data.socketId, socket.id)
+                    if (item.textContent.includes(data?.socketId)) {
+                        item.remove();
+                    }
+                });
+            });
+        </script>
 </body>
 
 </html>

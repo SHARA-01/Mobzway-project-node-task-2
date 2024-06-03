@@ -57,8 +57,22 @@
         function redirect() {
             const email = $('#email').val();
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
             if (emailPattern.test(email)) {
-                window.location.href = `/room/user/${email}`
+                $.ajax({
+                    url: `/user/${email}`,
+                    type: 'GET',
+                    success: function (res) {
+                        if(res.length <= 0){
+                           toastr.error("User not exits. Please register first to join.")
+                        }else {
+                         window.location.href = `/room/user/${email}`
+                        }
+                    },
+                    error: function (error) {
+                        toastr.error(error)
+                    }
+                });
             } else {
                 toastr.error("Please Enter a email");
             }
